@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ds_toolbar_root"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="@drawable/background_toolbar"
+    android:layout_marginTop="-2dp"
+    >
+    <!--android:background="@color/app_accent"-->
+
+    <com.developingstorys.chowii.cameraaws.dscustomview.DSTextView
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        />
+
+    <ImageButton
+        android:id="@+id/send_aws"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:background="@color/app_accent"
+        android:src="@drawable/img_more"
+        android:layout_marginTop="13dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_alignRight="@id/titleTextView"
+        android:layout_alignEnd="@id/titleTextView"
+        />
+
+</RelativeLayout>
