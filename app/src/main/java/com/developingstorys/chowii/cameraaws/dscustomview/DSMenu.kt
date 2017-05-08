@@ -3,16 +3,18 @@ package com.developingstorys.chowii.cameraaws.dscustomview
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.TextView
 import butterknife.ButterKnife
 import butterknife.Unbinder
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.developingstorys.chowii.cameraaws.R
 import com.developingstorys.chowii.cameraaws.R.color.text_white
+import com.developingstorys.chowii.cameraaws.utils.Util
 
 /**
  * Created by chowii on 13/08/16.
@@ -20,7 +22,7 @@ import com.developingstorys.chowii.cameraaws.R.color.text_white
 class DSMenu: Fragment() {
 
 
-    val checkBok: TextView? by bindOptionalView(R.id.ds_checkBox)
+    val checkBox: CheckBox by bindView(R.id.ds_checkBox)
     val menu_root: LinearLayout? by bindOptionalView(R.id.ds_menu_root)
     var unbind: Unbinder? = null
 
@@ -32,9 +34,21 @@ class DSMenu: Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        checkBok?.text = getString(R.string.action_send_aws)
-        checkBok?.setTextColor(ContextCompat.getColor(context, text_white))
-        Log.d("TAF", "menu created" + unbind)
+        checkBox.text = getString(R.string.action_send_aws)
+        checkBox.setTextColor(ContextCompat.getColor(context, text_white))
+        checkBox.isSuggestionsEnabled
+        sendToServer(checkBox.isChecked)
+    }
+
+    fun sendToServer(checked: Boolean){
+        if(checked){
+            val transferUtility: TransferUtility = Util.getTransferUtility(context)
+            //var observer = transferUtility.upload()
+        }
+    }
+
+    public fun checkBOX(selected: onSelectedListener){
+        selected.onSelected(checkBox.isChecked)
     }
 
     override fun onPause() {
@@ -42,5 +56,11 @@ class DSMenu: Fragment() {
         unbind?.unbind()
         unbind = null
     }
+
+    interface onSelectedListener{
+        fun onSelected(select: Boolean)
+    }
+
+
 
 }

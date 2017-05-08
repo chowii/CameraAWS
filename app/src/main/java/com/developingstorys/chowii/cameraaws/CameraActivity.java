@@ -14,20 +14,30 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.developingstorys.chowii.cameraaws.dscustomview.CustomToolbar;
+import com.developingstorys.chowii.cameraaws.dscustomview.DSMenu;
 import com.developingstorys.chowii.cameraaws.dscustomview.DSToolbar;
+import com.developingstorys.chowii.cameraaws.utils.Constants;
+import com.developingstorys.chowii.cameraaws.utils.Util;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,6 +52,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private String TAG = this.getClass().getSimpleName();
     public final int CAMERA_REQUEST_CODE = 1234;
     public final int VIDEO_REQUEST_CODE = 4321;
+    DSToolbar frag;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -64,7 +75,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_camera);
         ButterKnife.bind(this);
 
-        inflateToolbar();
+        //addViews();
+
+        Toolbar ct = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(ct);
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -72,11 +86,17 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
-    private int inflateToolbar() {
-        return getSupportFragmentManager()
+    public void addViews(){
+        frag = inflateToolbar();
+    }
+
+    private DSToolbar inflateToolbar() {
+        DSToolbar toolbar = new DSToolbar();
+         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.ds_toolbar_container,new DSToolbar())
+                .add(R.id.ds_toolbar_container, toolbar)
                 .commit();
+        return toolbar;
     }
 
     @OnClick(R.id.open_camera)
@@ -93,8 +113,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     Manifest.permission.CAMERA,
                     Manifest.permission.RECORD_AUDIO}, CAMERA_REQUEST_CODE);
         else sendCameraIntent();
-
-
     }
 
     private void sendCameraIntent(){
@@ -103,19 +121,37 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 .setPositiveButton("Still", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        startCameraIntent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA, CAMERA_REQUEST_CODE);
+                        //if(frag != null)
+                        startCameraIntent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA, CAMERA_REQUEST_CODE, true);
                     }
                 }).setNegativeButton("Video", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                startCameraIntent(MediaStore.INTENT_ACTION_VIDEO_CAMERA, VIDEO_REQUEST_CODE);
+                //if(frag != null)
+                startCameraIntent(MediaStore.INTENT_ACTION_VIDEO_CAMERA, VIDEO_REQUEST_CODE, true);
             }
         }).show();
     }
 
-    private void startCameraIntent(String camera, int code) {
+    private void startCameraIntent(String camera, int code, boolean uploadToServer) {
         Intent cameraIntent = new Intent(camera);
-        Uri photoUri = Uri.fromFile(getOutputMediaFile(MEDIA_TYPE_IMAGE, getApplicationContext()));
+        File cameraFile = getOutputMediaFile(MEDIA_TYPE_IMAGE, getApplicationContext());
+        File cameraAwsFile = new File(Constants.BUCKET_NAME);
+        Uri photoUri = Uri.fromFile(cameraFile);
+            Log.d(TAG, "startCameraIntent: " + cameraFile.getName());
+        if(uploadToServer){
+            TransferUtility transfer = Util.getTransferUtility(this);
+            UUID userID = UUID.randomUUID();
+            String datePattern = "yyyy-mm";
+            SimpleDateFormat dateObject = new SimpleDateFormat(datePattern);
+            TransferObserver observer =
+                    transfer.upload(
+                            Constants.BUCKET_NAME,
+                            "users/"+userID+"/"+dateObject+"/"+cameraFile.getName(),
+                            cameraAwsFile,
+                            CannedAccessControlList.PublicRead);
+
+        }
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         if (cameraIntent.resolveActivity(getPackageManager()) != null)
             startActivityForResult(cameraIntent, code);

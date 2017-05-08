@@ -23,6 +23,7 @@
         android:layout_marginEnd="10dp"
         android:layout_gravity="top|center"
         android:shadowColor="#000"
+        android:buttonTint="@color/text_white"
         />
     <View
         android:layout_marginTop="5dp"
